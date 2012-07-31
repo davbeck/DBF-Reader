@@ -282,11 +282,7 @@
 				GCC_PREFIX_HEADER = "DBF Reader_Prefix.pch";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../Libraries/SHP Lib/build/Debug\"",
-					"\"$(SRCROOT)/../../Libraries/SHP Lib/build/Release\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "DBF Reader";
 			};
@@ -305,11 +301,7 @@
 				GCC_PREFIX_HEADER = "DBF Reader_Prefix.pch";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../Libraries/SHP Lib/build/Debug\"",
-					"\"$(SRCROOT)/../../Libraries/SHP Lib/build/Release\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "DBF Reader";
 			};

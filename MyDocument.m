@@ -20,16 +20,14 @@
 		
 		data = [[NSMutableArray alloc] init];
 		fields = [[NSMutableArray alloc] init];
-		types = [[NSArray alloc] initWithObjects:
-				 [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"String", [NSNumber numberWithInt:FTString], nil]
-																		forKeys:[NSArray arrayWithObjects:@"name", @"type", nil]], 
-				 [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"Integer", [NSNumber numberWithInt:FTInteger], nil]
-											 forKeys:[NSArray arrayWithObjects:@"name", @"type", nil]],  
-				 [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"Double", [NSNumber numberWithInt:FTDouble], nil]
-											 forKeys:[NSArray arrayWithObjects:@"name", @"type", nil]], 
-				 [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"Date", [NSNumber numberWithInt:FTDate], nil]
-											 forKeys:[NSArray arrayWithObjects:@"name", @"type", nil]], 
-				 nil];
+		types = @[[NSDictionary dictionaryWithObjects:@[@"String", @(FTString)]
+																		forKeys:@[@"name", @"type"]], 
+				 [NSDictionary dictionaryWithObjects:@[@"Integer", @(FTInteger)]
+											 forKeys:@[@"name", @"type"]],  
+				 [NSDictionary dictionaryWithObjects:@[@"Double", @(FTDouble)]
+											 forKeys:@[@"name", @"type"]], 
+				 [NSDictionary dictionaryWithObjects:@[@"Date", @(FTDate)]
+											 forKeys:@[@"name", @"type"]]];
 		
 		dateFormatter = [[NSDateFormatter alloc] init];
 		[dateFormatter setDateStyle:NSDateFormatterMediumStyle];
@@ -42,7 +40,7 @@
 - (void)windowControllerDidLoadNib:(NSWindowController *)aController {
     [super windowControllerDidLoadNib:aController];
 	//Interface builder won't let you create a table with 0 columns
-	[table removeTableColumn:[[table tableColumns] objectAtIndex:0]];
+	[table removeTableColumn:[table tableColumns][0]];
     // Add any code here that needs to be executed once the windowController has loaded the document's window.
 	
 	[self setSearchPredicate];
@@ -56,7 +54,7 @@
 - (void)setSearchPredicate {
 	int predicateCount = 1;
 	NSMutableString *allPredicate = [NSMutableString string];
-	for (id key in [data objectAtIndex:0]) {
+	for (id key in data[0]) {
 		predicateCount++;
 		if(predicateCount > 2)
 			[allPredicate appendString:@" or "];
@@ -65,8 +63,8 @@
 	[searcher bind:@"predicate"
 		  toObject:controller
 	   withKeyPath:@"filterPredicate"
-		   options:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"Search", allPredicate, nil]
-											   forKeys:[NSArray arrayWithObjects:NSDisplayNameBindingOption, NSPredicateFormatBindingOption, nil]]];
+		   options:[NSDictionary dictionaryWithObjects:@[@"Search", allPredicate]
+											   forKeys:@[NSDisplayNameBindingOption, NSPredicateFormatBindingOption]]];
 }
 
 - (NSString *)windowNibName
@@ -133,13 +131,11 @@
 				break;
 		}
 		
-		NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:
-																					  [NSString stringWithUTF8String:szTitle], 
-																					  [NSNumber numberWithInt:width], 
-																					  [NSNumber numberWithInt:decimals], 
-																					  [NSNumber numberWithInt:index],
-																					  nil]
-																			 forKeys:[NSArray arrayWithObjects:@"title", @"size", @"decimals", @"type", nil]];
+		NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithObjects:@[@(szTitle), 
+																					  @(width), 
+																					  @(decimals), 
+																					  @(index)]
+																			 forKeys:@[@"title", @"size", @"decimals", @"type"]];
 		[fields addObject:dictionary];
 		[self startObservingDictionary:dictionary];
 	}
@@ -160,28 +156,25 @@
 			/*      information implicit in the DBF field description.              */
 			/* -------------------------------------------------------------------- */
             if( DBFIsAttributeNULL( hDBF, iRecord, i ) ) {
-				[row setObject:@"NULL" forKey:[NSString stringWithUTF8String:szTitle]];
+				row[@(szTitle)] = @"NULL";
 			} else {
 				switch(DBFGetNativeFieldType(hDBF, i)) {
 					case 'C': //Stirng
-						[row setObject:[NSString stringWithUTF8String:DBFReadStringAttribute( hDBF, iRecord, i )]
-								forKey:[NSString stringWithUTF8String:szTitle]];
+						row[@(szTitle)] = @(DBFReadStringAttribute( hDBF, iRecord, i ));
 						break;
 						
 					case 'N': //Integer
-						[row setObject:[NSNumber numberWithInt:DBFReadIntegerAttribute( hDBF, iRecord, i )]
-									forKey:[NSString stringWithUTF8String:szTitle]];
+						row[@(szTitle)] = @(DBFReadIntegerAttribute( hDBF, iRecord, i ));
 						break;
 						
 					case 'F': //Double
-						[row setObject:[NSNumber numberWithDouble:DBFReadDoubleAttribute( hDBF, iRecord, i )]
-								forKey:[NSString stringWithUTF8String:szTitle]];
+						row[@(szTitle)] = @(DBFReadDoubleAttribute( hDBF, iRecord, i ));
 						break;
 					
 						//the ; is used because without it there is a syntax error whenever you declare a variable first
 					case 'D':; //Date
 						NSDate *date;
-						NSString *string = [[NSNumber numberWithInt:DBFReadIntegerAttribute(hDBF, iRecord, i)] stringValue];
+						NSString *string = [@(DBFReadIntegerAttribute(hDBF, iRecord, i)) stringValue];
 						if([string length] == 8) {
 							int year = [[string substringWithRange:NSMakeRange(0, 4)] intValue];
 							if(year < 1920)
@@ -191,8 +184,7 @@
 							date = [NSDate date];
 						}
 						
-						[row setObject:date 
-								forKey:[NSString stringWithUTF8String:szTitle]];
+						row[@(szTitle)] = date;
 						break;
 				}
 			}
@@ -210,7 +202,7 @@
 	
 	for(id field in fields) {
 		DBFFieldType type;
-		switch([[field objectForKey:@"type"] intValue]) {
+		switch([field[@"type"] intValue]) {
 			case 0:	//String
 				type = FTString;
 				break;
@@ -228,36 +220,36 @@
 				break;
 		}
 		DBFAddField(handle, 
-					[[field objectForKey:@"title"] UTF8String], 
+					[field[@"title"] UTF8String], 
 					type, 
-					[[field objectForKey:@"size"] intValue],
-					[[field objectForKey:@"decimals"] intValue]);
+					[field[@"size"] intValue],
+					[field[@"decimals"] intValue]);
 	}
 	
 	int col = 0;
 	for(id field in fields) {
 		int row = 0;
 		for(id record in data) {
-			switch([[field objectForKey:@"type"] intValue]) {
+			switch([field[@"type"] intValue]) {
 				case 0:	//String
 					DBFWriteStringAttribute(handle, 
 											row, col, 
-											[[record objectForKey:[field objectForKey:@"title"]] UTF8String]);
+											[record[field[@"title"]] UTF8String]);
 					break;
 				case 1: //Integer
 					DBFWriteIntegerAttribute(handle, 
 											 row, col, 
-											 [[record objectForKey:[field objectForKey:@"title"]] intValue]);
+											 [record[field[@"title"]] intValue]);
 					break;
 				case 2: //Double
 					DBFWriteDoubleAttribute(handle, 
 											row, col, 
-											[[record objectForKey:[field objectForKey:@"title"]] doubleValue]);
+											[record[field[@"title"]] doubleValue]);
 					break;
 				case 3:	//Date
 					DBFWriteIntegerAttribute(handle, 
 											 row, col, 
-											 [[[record objectForKey:[field objectForKey:@"title"]] descriptionWithCalendarFormat:@"%Y%m%d" timeZone:nil locale:nil] intValue]);
+											 [[record[field[@"title"]] descriptionWithCalendarFormat:@"%Y%m%d" timeZone:nil locale:nil] intValue]);
 					break;
 			}
 			row++;
@@ -321,28 +313,27 @@
 	{
 		//check for changes to the title
 		
-		if(![[change objectForKey:@"new"] isEqual:[change objectForKey:@"old"]]) {
-			NSTableColumn *column = [table tableColumnWithIdentifier:[change objectForKey:@"old"]];
+		if(![change[@"new"] isEqual:change[@"old"]]) {
+			NSTableColumn *column = [table tableColumnWithIdentifier:change[@"old"]];
 			
-			[column setIdentifier:[change objectForKey:@"new"]];
-			[[column headerCell] setStringValue:[change objectForKey:@"new"]];
+			[column setIdentifier:change[@"new"]];
+			[[column headerCell] setStringValue:change[@"new"]];
 			
 			[column unbind:@"value"];
 			[column bind:@"value"
 				toObject:controller
-			 withKeyPath:[NSString stringWithFormat:@"arrangedObjects.%@", [change objectForKey:@"new"]] 
-				 options:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil] 
-													 forKeys:[NSArray arrayWithObjects:NSCreatesSortDescriptorBindingOption, NSAllowsEditingMultipleValuesSelectionBindingOption, NSConditionallySetsEditableBindingOption, nil]]];
-			NSSortDescriptor *sorter = [[NSSortDescriptor alloc] initWithKey:[change objectForKey:@"new"]
+			 withKeyPath:[NSString stringWithFormat:@"arrangedObjects.%@", change[@"new"]] 
+				 options:[NSDictionary dictionaryWithObjects:@[@YES, @YES, @YES] 
+													 forKeys:@[NSCreatesSortDescriptorBindingOption, NSAllowsEditingMultipleValuesSelectionBindingOption, NSConditionallySetsEditableBindingOption]]];
+			NSSortDescriptor *sorter = [[NSSortDescriptor alloc] initWithKey:change[@"new"]
 																   ascending:YES];
 			[column setSortDescriptorPrototype:sorter];
 			
 			for(id record in data) {
 				//move the value from the old key to the new key
-				[record setObject:[record objectForKey:	[change objectForKey:@"old"]] 
-						   forKey:						[change objectForKey:@"new"]];
+				record[change[@"new"]] = record[change[@"old"]];
 				
-				[record removeObjectForKey:[change objectForKey:@"old"]];
+				[record removeObjectForKey:change[@"old"]];
 			}
 			[table reloadData];
 		}
@@ -350,31 +341,31 @@
 	}
 	if([keyPath isEqual:@"type"] && [fields containsObject:object])
 	{
-		if([[change objectForKey:@"new"] integerValue] == 3)
-			[[[table tableColumnWithIdentifier:[object objectForKey:@"title"]] dataCell] setFormatter:dateFormatter];
-		else if([[change objectForKey:@"old"] integerValue] == 3)
-			[[[table tableColumnWithIdentifier:[object objectForKey:@"title"]] dataCell] setFormatter:nil];
+		if([change[@"new"] integerValue] == 3)
+			[[[table tableColumnWithIdentifier:object[@"title"]] dataCell] setFormatter:dateFormatter];
+		else if([change[@"old"] integerValue] == 3)
+			[[[table tableColumnWithIdentifier:object[@"title"]] dataCell] setFormatter:nil];
 		
-		id key = [object objectForKey:@"title"];
+		id key = object[@"title"];
 		for(id row in data) {
-			id value = [row objectForKey:key];
-			if([[change objectForKey:@"new"] integerValue] == 0) { //string
-				[row setObject:[NSString stringWithString:[value description]] forKey:key];
-			} else if([[change objectForKey:@"new"] integerValue] == 1 || [[change objectForKey:@"new"] integerValue] == 2) { //number
-				[row setObject:[NSNumber numberWithDouble:[[value description] doubleValue]] forKey:key];
-			} else if([[change objectForKey:@"new"] integerValue] == 3) { //date
+			id value = row[key];
+			if([change[@"new"] integerValue] == 0) { //string
+				row[key] = [NSString stringWithString:[value description]];
+			} else if([change[@"new"] integerValue] == 1 || [change[@"new"] integerValue] == 2) { //number
+				row[key] = @([[value description] doubleValue]);
+			} else if([change[@"new"] integerValue] == 3) { //date
 				//if the date cannot be parsed from the original value, it returns nil and an error when inputed into the dictionary
 				NSDate *date = [NSDate dateWithNaturalLanguageString:[value description]];
 				if(date == nil)
 					date = [NSDate dateWithTimeIntervalSinceNow:0.0];
 				//if we couldn't parse the date, insert current time.
-				[row setObject:date forKey:key];
+				row[key] = date;
 			}
 		}
 	}
 	
 	NSUndoManager *undo = [self undoManager];
-	id oldValue = [change objectForKey:NSKeyValueChangeOldKey];
+	id oldValue = change[NSKeyValueChangeOldKey];
 	
 	if(oldValue == [NSNull null])
 		oldValue = nil;
@@ -386,7 +377,7 @@
 }
 - (NSTableColumn *)createTableColumnForField:(NSDictionary *)field
 {
-	id key = [field objectForKey:@"title"];
+	id key = field[@"title"];
 	
 	NSTableColumn *newColumn = [[NSTableColumn alloc] initWithIdentifier:key];
 	[newColumn setEditable:YES];
@@ -396,28 +387,28 @@
 	[newColumn bind:@"value"
 		   toObject:controller
 		withKeyPath:[NSString stringWithFormat:@"arrangedObjects.%@", key] 
-			options:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil] 
-												forKeys:[NSArray arrayWithObjects:NSCreatesSortDescriptorBindingOption, NSAllowsEditingMultipleValuesSelectionBindingOption, NSConditionallySetsEditableBindingOption, nil]]];
+			options:[NSDictionary dictionaryWithObjects:@[@YES, @YES, @YES] 
+												forKeys:@[NSCreatesSortDescriptorBindingOption, NSAllowsEditingMultipleValuesSelectionBindingOption, NSConditionallySetsEditableBindingOption]]];
 	NSSortDescriptor *sorter = [[NSSortDescriptor alloc] initWithKey:key 
 														   ascending:YES];
 	[newColumn setSortDescriptorPrototype:sorter];
 	
-	if([[field objectForKey:@"type"] integerValue] == 3)
+	if([field[@"type"] integerValue] == 3)
 		[[newColumn dataCell] setFormatter:dateFormatter];
-	else if([[field objectForKey:@"type"] integerValue] == 3)
+	else if([field[@"type"] integerValue] == 3)
 		[[newColumn dataCell] setFormatter:nil];
 	
 	return newColumn;
 }
 - (void)insertObject:(NSMutableDictionary *)dictionary inFieldsAtIndex:(int)index
 {
-	[dictionary setObject:[NSString stringWithFormat:@"New Column %i", newColumnCount++] forKey:@"title"];
-	[dictionary setObject:[NSNumber numberWithInt:0] forKey:@"type"];
-	[dictionary setObject:[NSNumber numberWithInt:25] forKey:@"size"];
-	[dictionary setObject:[NSNumber numberWithInt:0] forKey:@"decimals"];
+	dictionary[@"title"] = [NSString stringWithFormat:@"New Column %i", newColumnCount++];
+	dictionary[@"type"] = @0;
+	dictionary[@"size"] = @25;
+	dictionary[@"decimals"] = @0;
 	[table addTableColumn:[self createTableColumnForField:dictionary]];
 	for(id row in data) {
-		[row setObject:@"" forKey:[dictionary objectForKey:@"title"]];
+		row[dictionary[@"title"]] = @"";
 	}
 	
 	NSUndoManager *undo = [self undoManager];
@@ -430,7 +421,7 @@
 	[fields insertObject:dictionary atIndex:index];
 }
 - (void)removeObjectFromFieldsAtIndex:(int)index {
-	NSMutableDictionary *dictionary = [data objectAtIndex:index];
+	NSMutableDictionary *dictionary = data[index];
 	NSUndoManager *undo = [self undoManager];
 	[[undo prepareWithInvocationTarget:self] insertObject:dictionary
 											inFieldsAtIndex:index];
@@ -451,7 +442,7 @@
 	[data insertObject:dictionary atIndex:index];
 }
 - (void)removeObjectFromDataAtIndex:(int)index {
-	NSMutableDictionary *dictionary = [data objectAtIndex:index];
+	NSMutableDictionary *dictionary = data[index];
 	NSUndoManager *undo = [self undoManager];
 	[[undo prepareWithInvocationTarget:self] insertObject:dictionary
 											 inDataAtIndex:index];
@@ -483,7 +474,7 @@
 	//delegate method of NSTableView
 	//if the new selected index is a blank entry (not just empty strings but nothing has been set)
 	//we assume it is a new row and we start editing it which scrolls to it
-	if([[[data objectAtIndex:[table selectedRow]] allKeys] count] == 0)
+	if([[data[[table selectedRow]] allKeys] count] == 0)
 		[table editColumn:0 row:[table selectedRow] withEvent:nil select:YES];
 }
 

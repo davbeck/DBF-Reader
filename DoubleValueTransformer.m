@@ -18,6 +18,6 @@
     return NO;
 }
 - (id)transformedValue:(id)value {
-	return [NSNumber numberWithBool:[value intValue]==FTDouble];
+	return @([value intValue] == FTDouble);
 }
 @end
