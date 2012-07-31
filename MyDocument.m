@@ -160,7 +160,7 @@
 			/*      information implicit in the DBF field description.              */
 			/* -------------------------------------------------------------------- */
             if( DBFIsAttributeNULL( hDBF, iRecord, i ) ) {
-				[row setObject:[NSString stringWithString:@"NULL"] forKey:[NSString stringWithUTF8String:szTitle]];
+				[row setObject:@"NULL" forKey:[NSString stringWithUTF8String:szTitle]];
 			} else {
 				switch(DBFGetNativeFieldType(hDBF, i)) {
 					case 'C': //Stirng
@@ -193,9 +193,6 @@
 						
 						[row setObject:date 
 								forKey:[NSString stringWithUTF8String:szTitle]];
-						break;
-						
-					default:
 						break;
 				}
 			}
@@ -283,8 +280,6 @@
 		[self stopObservingDictionary:dictionary];
 	}
 	
-	[data release];
-	[array retain];
 	data = array;
 	
 	for (NSMutableDictionary *dictionary in data)
@@ -302,8 +297,6 @@
 		[self stopObservingDictionary:dictionary];
 	}
 	
-	[fields release];
-	[array retain];
 	fields = array;
 	
 	for (NSMutableDictionary *dictionary in fields)
@@ -343,7 +336,6 @@
 			NSSortDescriptor *sorter = [[NSSortDescriptor alloc] initWithKey:[change objectForKey:@"new"]
 																   ascending:YES];
 			[column setSortDescriptorPrototype:sorter];
-			[sorter release];
 			
 			for(id record in data) {
 				//move the value from the old key to the new key
@@ -409,14 +401,13 @@
 	NSSortDescriptor *sorter = [[NSSortDescriptor alloc] initWithKey:key 
 														   ascending:YES];
 	[newColumn setSortDescriptorPrototype:sorter];
-	[sorter release];
 	
 	if([[field objectForKey:@"type"] integerValue] == 3)
 		[[newColumn dataCell] setFormatter:dateFormatter];
 	else if([[field objectForKey:@"type"] integerValue] == 3)
 		[[newColumn dataCell] setFormatter:nil];
 	
-	return [newColumn autorelease];
+	return newColumn;
 }
 - (void)insertObject:(NSMutableDictionary *)dictionary inFieldsAtIndex:(int)index
 {
@@ -510,12 +501,5 @@
 	[NSApp endSheet:columnWindow returnCode:1];
 }
 
-- (void)dealloc {
-	[types release];
-	[data release];
-	[fields release];
-	[dateFormatter release];
-	[super dealloc];
-}
 
 @end
